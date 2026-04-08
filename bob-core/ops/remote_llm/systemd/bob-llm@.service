@@ -1,0 +1,17 @@
+[Unit]
+Description=Bob local LLM service (%i)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=girish
+Group=girish
+EnvironmentFile=/etc/bob-llm/%i.env
+WorkingDirectory=/opt/bob-llm
+ExecStart=/bin/bash -lc 'source /opt/bob-llm/venv/bin/activate && api_key_args=(); if [[ -n "$${API_KEY:-}" ]]; then api_key_args+=(--api-key "$$API_KEY"); fi; exec vllm serve "$$MODEL_ID" --host 127.0.0.1 --port "$$PORT" "$${api_key_args[@]}" --served-model-name "$$MODEL_ALIAS" --download-dir /opt/bob-llm/models --gpu-memory-utilization "$${GPU_MEMORY_UTILIZATION:-0.92}" --max-model-len "$${MAX_MODEL_LEN:-32768}" $${EXTRA_ARGS:-}'
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,22 @@
+http://llm.rionnag.net {
+  encode zstd gzip
+
+  @gpt_oss path /gpt-oss/*
+  handle @gpt_oss {
+    uri strip_prefix /gpt-oss
+    reverse_proxy 127.0.0.1:8001
+  }
+
+  # Uncomment these routes when additional model services are enabled.
+  # @code path /code/*
+  # handle @code {
+  #   uri strip_prefix /code
+  #   reverse_proxy 127.0.0.1:8002
+  # }
+  #
+  # @think path /think/*
+  # handle @think {
+  #   uri strip_prefix /think
+  #   reverse_proxy 127.0.0.1:8003
+  # }
+}

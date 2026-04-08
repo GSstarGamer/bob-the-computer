@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bob-core"
 version = "0.1.0"
-description = "Bob Stage 2 planner runtime built on the OpenAI API."
+description = "Bob unified planning runtime with OpenAI and OpenAI-compatible LLM backends."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
@@ -30,3 +30,6 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "local_llm: opt-in live tests that hit a real OpenAI-compatible local model endpoint",
+]
