@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, TypeVar
 from uuid import uuid4
 
 from pydantic import BaseModel
 
 from bob.stage1.models import RunLedger
+
+ModelT = TypeVar("ModelT", bound=BaseModel)
 
 
 def project_root() -> Path:
@@ -61,13 +65,18 @@ class RunStore:
         self._write_json(path, model)
         return path
 
-    def load_model(self, run_id: str, filename: str, model_type: type[BaseModel]) -> BaseModel:
+    def load_model(self, run_id: str, filename: str, model_type: type[ModelT]) -> ModelT:
         path = self.paths_for(run_id).run_dir / filename
         return model_type.model_validate_json(path.read_text(encoding="utf-8"))
 
     def save_text(self, run_id: str, filename: str, content: str) -> Path:
         path = self.paths_for(run_id).run_dir / filename
         path.write_text(content, encoding="utf-8")
+        return path
+
+    def save_json(self, run_id: str, filename: str, payload: dict[str, Any] | list[Any]) -> Path:
+        path = self.paths_for(run_id).run_dir / filename
+        path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
         return path
 
     @staticmethod

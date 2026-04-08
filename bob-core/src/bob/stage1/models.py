@@ -14,6 +14,8 @@ class Stage1Status(str, Enum):
     INTAKE = "INTAKE"
     RESEARCHING = "RESEARCHING"
     PLANNING = "PLANNING"
+    AWAITING_PLAN_APPROVAL = "AWAITING_PLAN_APPROVAL"
+    PLAN_APPROVED = "PLAN_APPROVED"
     AWAITING_WRITE_APPROVAL = "AWAITING_WRITE_APPROVAL"
     CODING = "CODING"
     VERIFYING = "VERIFYING"
@@ -103,6 +105,52 @@ class TaskBrief(BaseModel):
     repo_snapshot: GitSnapshot
 
 
+class PlanAssumption(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str
+    rationale: str | None = None
+
+
+class PlanRisk(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    text: str
+    mitigation: str | None = None
+
+
+class PlanStage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    goal: str
+    files_or_modules: list[str] = Field(default_factory=list)
+    expected_output: str
+
+
+class Plan(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    task_summary: str
+    constraints: list[str] = Field(default_factory=list)
+    assumptions: list[PlanAssumption] = Field(default_factory=list)
+    risks: list[PlanRisk] = Field(default_factory=list)
+    stages: list[PlanStage] = Field(default_factory=list)
+    approval_notes: str
+
+
+class PlannerResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plan: Plan
+    model: str
+    response_id: str | None = None
+    prompt_version: str
+    normalization_warnings: list[str] = Field(default_factory=list)
+    raw_output_text: str | None = None
+    created_at: datetime = Field(default_factory=utc_now)
+
+
 class ResearchPacket(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -179,6 +227,8 @@ class FinalSummary(BaseModel):
 class ApprovalState(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    plan_approved: bool = False
+    plan_approved_at: datetime | None = None
     write_approved: bool = False
     write_approved_at: datetime | None = None
     publish_approved: bool = False
@@ -189,6 +239,9 @@ class ArtifactIndex(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     task_brief: str = "task_brief.json"
+    planner_prompt: str = "planner_prompt.md"
+    planner_response: str = "planner_response.json"
+    planner_result: str = "planner_result.json"
     research_packet: str = "research_packet.json"
     plan_packet: str = "plan_packet.json"
     codex_research: str = "codex_research.md"
@@ -215,6 +268,7 @@ class RunLedger(BaseModel):
     artifacts: ArtifactIndex = Field(default_factory=ArtifactIndex)
     model_settings: dict[str, str] = Field(default_factory=dict)
     trace_ids: dict[str, str] = Field(default_factory=dict)
+    response_ids: dict[str, str] = Field(default_factory=dict)
     codex_session_ids: dict[str, str] = Field(default_factory=dict)
     latest_error: str | None = None
 
